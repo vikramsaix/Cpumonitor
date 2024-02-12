@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Resource Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- For Charts -->
+</head>
+<body>
+    <h1>System Resource Monitor</h1>
+    <button id="refreshData">Refresh Data</button>
+    <h2>CPU Usage: <span id="cpuUsage"></span>%</h2>
+    <h2>Free Memory: <span id="freeMemory"></span>%</h2>
+    <h2>Total Memory: <span id="totalMemory"></span> GB</h2>
+    <h2>System Uptime: <span id="uptime"></span> Seconds</h2>
+    
+    <canvas id="memoryUsageChart" width="400" height="400"></canvas>
+
+    <script>
+        document.getElementById('refreshData').addEventListener('click', function() {
+            fetch('http://localhost:3000/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cpuUsage').textContent = data.cpuUsage.toFixed(2);
+                    document.getElementById('freeMemory').textContent = (data.freeMemory * 100).toFixed(2);
+                    document.getElementById('totalMemory').textContent = (data.totalMemory / 1024).toFixed(2); // Assuming totalmem returns KB
+                    document.getElementById('uptime').textContent = data.uptime.toFixed(2);
+                    
+                    var ctx = document.getElementById('memoryUsageChart').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Free Memory', 'Used Memory'],
+                            datasets: [{
+                                label: 'Memory Usage',
+                                data: [data.freeMemoryGB, data.totalMemory - data.freeMemoryGB],
+                                backgroundColor: [
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 99, 132, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255,99,132,1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        }
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
